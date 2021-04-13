@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 struct Todo {
-    id: String,
+    id: Uuid,
     description: String,
     done: bool,
     datetime: String,
@@ -25,13 +25,13 @@ async fn hc() -> impl Responder {
 async fn todo_list() -> impl Responder {
     let list = TodoList(vec![
         Todo {
-            id: Uuid::new_v4().to_string(),
+            id: Uuid::new_v4(),
             description: "タスク1".to_string(),
             done: false,
             datetime: Utc::now().to_string(),
         },
         Todo {
-            id: Uuid::new_v4().to_string(),
+            id: Uuid::new_v4(),
             description: "タスク2".to_string(),
             done: false,
             datetime: Utc::now().to_string(),

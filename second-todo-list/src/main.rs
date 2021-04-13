@@ -24,7 +24,7 @@ struct SqliteTodo {
 impl From<SqliteTodo> for Todo {
     fn from(st: SqliteTodo) -> Self {
         Todo {
-            id: st.id,
+            id: Uuid::parse_str(st.id.as_str()).unwrap(),
             description: st.description,
             done: matches!(st.done, 1),
             datetime: st.datetime,
@@ -34,7 +34,7 @@ impl From<SqliteTodo> for Todo {
 
 #[derive(Serialize, Deserialize)]
 struct Todo {
-    id: String,
+    id: Uuid,
     description: String,
     done: bool,
     datetime: String,
