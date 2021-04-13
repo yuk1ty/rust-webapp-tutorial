@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate log;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -40,6 +42,11 @@ async fn todo_list() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    std::env::set_var("RUST_LOG", "INFO");
+    env_logger::init();
+
+    info!("Bootstrapping the server...");
+
     HttpServer::new(|| App::new().service(hc).service(todo_list))
         .bind("127.0.0.1:8080")?
         .run()
