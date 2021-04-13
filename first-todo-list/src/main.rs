@@ -1,16 +1,16 @@
 #[macro_use]
 extern crate log;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 struct Todo {
-    id: Uuid,
+    id: String,
     description: String,
     done: bool,
-    datetime: DateTime<Utc>,
+    datetime: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -25,16 +25,16 @@ async fn hc() -> impl Responder {
 async fn todo_list() -> impl Responder {
     let list = TodoList(vec![
         Todo {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().to_string(),
             description: "タスク1".to_string(),
             done: false,
-            datetime: Utc::now(),
+            datetime: Utc::now().to_string(),
         },
         Todo {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().to_string(),
             description: "タスク2".to_string(),
             done: false,
-            datetime: Utc::now(),
+            datetime: Utc::now().to_string(),
         },
     ]);
     HttpResponse::Ok().json(list)

@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "health-check",
-    "first-todo-list"
+    "first-todo-list",
+    "second-todo-list"
 ]
