@@ -86,7 +86,7 @@ struct TodoList(Vec<Todo>);
 ]
 ```
 
-ここでのポイントは NewType パターンと呼ばれるものです。 `struct TodoList(Vec<Todo>)` という書き方です。今回 NewType パターンを導入したのは、単純にこうすると `Todo` のリストのシリアライズを簡単にできるからという理由ではあるのですが、NewTYpe パターン自体は Rust で多くみかけるので、解説します。
+ここでのポイントは New Type パターンと呼ばれるものです。 `struct TodoList(Vec<Todo>)` という書き方です。今回 New Type パターンを導入したのは、単純にこうすると `Todo` のリストのシリアライズを簡単にできるからという理由ではあるのですが、New Type パターン自体は Rust で多くみかけるので、解説します。
 
 ### New Type パターン
 
