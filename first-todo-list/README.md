@@ -30,8 +30,11 @@ use serde::Serialize;
 use uuid::Uuid
 
 #[derive(Serialize)]
+struct TaskId(Uuid);
+
+#[derive(Serialize)]
 struct Todo {
-    id: Uuid,
+    id: TaskId,
     description: String,
     done: bool,
     datetime: DateTime<Utc>,
@@ -51,6 +54,18 @@ UUID を生成できます。今回は UUIDv4 を生成して ID を採番した
 ### chrono クレート
 
 `DateTime` 型は chorono というクレートが提供する型です。日時操作に関する Rust におけるデファクトスタンダードになっています。
+
+### New Type パターン
+
+ここでのもうひとつのポイントは New Type パターンと呼ばれるものです。 `struct TodoId(Uuid)` という書き方です。New Type パターン自体は Rust で多くみかけるので、解説します。
+
+New Type の出自を正確には知らないのですが、私は Haskell を書いているときにこの用語を初めて見たように記憶しています。`newtype` は Haskell においては、ある型を元に別の新たな型を作る記法として導入されています。
+
+Rust では明示的に `newtype` のようなキーワードがあるわけではありませんが、New Type を Haskell 同様に実現できます。`struct A(T)` のように、型情報を構造体にもたせることで実現できます。実質要素 1 つのタプルをもたせたことになるので、取り出し時は `.0` のように通常のタプルと同じ記法で取り出しができます。
+
+Rust の公式の解説書である[ The Rust Programming Language ](https://doc.rust-jp.rs/book-ja/ch19-04-advanced-types.html)という本にも NewType パターンに関して言及している箇所があり、広く普及しているイディオムだと筆者は思います。
+
+New Type パターンは、型に情報を付与して表現力を強めたり、あるいは型内部の実装情報を隠蔽するために使用したりします。[実例はこの記事が詳しいです](https://keens.github.io/blog/2018/12/15/rustdetsuyomenikatawotsukerupart_1__new_type_pattern/)。
 
 ### フィーチャーフラグ
 
@@ -86,18 +101,6 @@ struct TodoList(Vec<Todo>);
 ]
 ```
 
-ここでのポイントは New Type パターンと呼ばれるものです。 `struct TodoList(Vec<Todo>)` という書き方です。今回 New Type パターンを導入したのは、単純にこうすると `Todo` のリストのシリアライズを簡単にできるからという理由ではあるのですが、New Type パターン自体は Rust で多くみかけるので、解説します。
-
-### New Type パターン
-
-New Type の出自を正確には知らないのですが、私は Haskell を書いているときにこの用語を初めて見たように記憶しています。`newtype` は Haskell においては、ある型を元に別の新たな型を作る記法として導入されています。
-
-Rust では明示的に `newtype` のようなキーワードがあるわけではありませんが、New Type を Haskell 同様に実現できます。`struct A(T)` のように、型情報を構造体にもたせることで実現できます。実質要素 1 つのタプルをもたせたことになるので、取り出し時は `.0` のように通常のタプルと同じ記法で取り出しができます。
-
-Rust の公式の解説書である[ The Rust Programming Language ](https://doc.rust-jp.rs/book-ja/ch19-04-advanced-types.html)という本にも NewType パターンに関して言及している箇所があり、広く普及しているイディオムだと筆者は思います。
-
-New Type パターンは、型に情報を付与して表現力を強めたり、あるいは型内部の実装情報を隠蔽するために使用したりします。[実例はこの記事が詳しいです](https://keens.github.io/blog/2018/12/15/rustdetsuyomenikatawotsukerupart_1__new_type_pattern/)。
-
 ## ダミーで作ったタスクのリストを返すエンドポイントを用意する
 
 GET リクエストを送ると、ダミーで用意したタスクのリストを返すようなエンドポイントを用意してみましょう。`/todo` というエンドポイントを用意し、それを HTTP サーバーに登録します。
@@ -107,13 +110,13 @@ GET リクエストを送ると、ダミーで用意したタスクのリスト�
 async fn todo_list() -> impl Responder {
     let list = TodoList(vec![
         Todo {
-            id: Uuid::new_v4(),
+            id: TaskId(Uuid::new_v4()),
             description: "タスク1".to_string(),
             done: false,
             datetime: Utc::now(),
         },
         Todo {
-            id: Uuid::new_v4(),
+            id: TaskId(Uuid::new_v4()),
             description: "タスク2".to_string(),
             done: false,
             datetime: Utc::now(),
