@@ -4,7 +4,7 @@
 
 ## 事前準備
 
-Cargo.toml あるいは cargo-edit を用いて、下記クレートの依存を追加してください。`feature` に serde がついているものは、後ほど使用するものですのでそれも忘れないように追加してください。
+Cargo.toml あるいは cargo-edit を用いて、下記クレートの依存を追加してください。`features` に serde がついているものは、後ほど使用するものですのでそれも忘れないように追加してください。
 
 ```toml
 [dependencies]
