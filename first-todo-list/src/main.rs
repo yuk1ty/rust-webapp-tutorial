@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate log;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -10,7 +10,7 @@ struct Todo {
     id: Uuid,
     description: String,
     done: bool,
-    datetime: String,
+    datetime: DateTime<Utc>,
 }
 
 #[derive(Serialize)]
@@ -28,13 +28,13 @@ async fn todo_list() -> impl Responder {
             id: Uuid::new_v4(),
             description: "タスク1".to_string(),
             done: false,
-            datetime: Utc::now().to_string(),
+            datetime: Utc::now(),
         },
         Todo {
             id: Uuid::new_v4(),
             description: "タスク2".to_string(),
             done: false,
-            datetime: Utc::now().to_string(),
+            datetime: Utc::now(),
         },
     ]);
     HttpResponse::Ok().json(list)

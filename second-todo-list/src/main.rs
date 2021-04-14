@@ -2,12 +2,14 @@
 extern crate log;
 use actix_web::web::{Data, Json};
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
-use chrono::Utc;
+use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+const DATETIME_FORMAT: &str = "%Y-%m-%dT%H:%M:%S";
 
 #[derive(Deserialize)]
 struct RegisterTodo {
@@ -27,7 +29,11 @@ impl From<SqliteTodo> for Todo {
             id: Uuid::parse_str(st.id.as_str()).unwrap(),
             description: st.description,
             done: matches!(st.done, 1),
-            datetime: st.datetime,
+            datetime: Utc
+                .from_local_datetime(
+                    &NaiveDateTime::parse_from_str(st.datetime.as_str(), DATETIME_FORMAT).unwrap(),
+                )
+                .unwrap(),
         }
     }
 }
@@ -37,7 +43,7 @@ struct Todo {
     id: Uuid,
     description: String,
     done: bool,
-    datetime: String,
+    datetime: DateTime<Utc>,
 }
 
 #[derive(Serialize)]
@@ -84,7 +90,7 @@ async fn register_todo(
         id: id.to_string(),
         description: req.0.description,
         done: 0,
-        datetime: Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string(),
+        datetime: Utc::now().format(DATETIME_FORMAT).to_string(),
     };
 
     let conn = db.get().unwrap();
