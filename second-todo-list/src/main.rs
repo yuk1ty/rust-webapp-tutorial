@@ -1,8 +1,7 @@
-#[macro_use]
-extern crate log;
 use actix_web::web::{Data, Json};
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
+use log::info;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::params;

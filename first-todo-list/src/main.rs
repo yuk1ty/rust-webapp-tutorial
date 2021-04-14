@@ -1,7 +1,6 @@
-#[macro_use]
-extern crate log;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use chrono::{DateTime, Utc};
+use log::info;
 use serde::Serialize;
 use uuid::Uuid;
 

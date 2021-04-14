@@ -160,6 +160,8 @@ Java の経験がある方であれば、Logback や Log4j といったライブ
 今回は、info 以上のログレベルのログを出力すると同時に、サーバー起動の初期セットアップが終わったタイミングで、`Bootstrapping the server...` というログを出力してみることにしました。
 
 ```rust
+use log::info;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "INFO");
@@ -177,10 +179,9 @@ async fn main() -> std::io::Result<()> {
 最終的にできあがったコードは下記のようになりました。
 
 ```rust
-#[macro_use]
-extern crate log;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use chrono::{DateTime, Utc};
+use log::info;
 use serde::Serialize;
 use uuid::Uuid;
 
