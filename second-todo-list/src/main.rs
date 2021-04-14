@@ -9,7 +9,7 @@ use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize)]
 struct RegisterTodo {
     description: String,
 }
@@ -32,7 +32,7 @@ impl From<SqliteTodo> for Todo {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct Todo {
     id: Uuid,
     description: String,
@@ -40,7 +40,7 @@ struct Todo {
     datetime: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct TodoList(Vec<Todo>);
 
 #[get("/health")]

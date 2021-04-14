@@ -2,10 +2,10 @@
 extern crate log;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use chrono::Utc;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct Todo {
     id: Uuid,
     description: String,
@@ -13,7 +13,7 @@ struct Todo {
     datetime: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct TodoList(Vec<Todo>);
 
 #[get("/health")]
