@@ -138,3 +138,97 @@ async fn main() -> std::io::Result<()> {
 ## サーバーでログを出したい
 
 サーバーを起動した際にログを出力したいと思うかもしれません。この節では Rust でログを出すためにはどうすればよいかについて、使用するといいクレートや Rust のログの考え方について紹介します。
+
+### log クレート
+
+Rust におけるロギングのファサードを担当するクレートです。このクレートの提供するトレイトに、各クレートが実装を独自に行なって行く形式をとっています。
+
+Java の経験がある方であれば、SLF4J が log クレートと実質同じ役割を果たしています。
+
+### env_logger クレート
+
+今回は実装側は `env_logger` というものを使用しています。これは筆者が単によく使っているからというだけの理由で選定しています。他にもいくつかロギングのクレートがあり、用途に応じて選ぶとよいと思います。
+
+Java の経験がある方であれば、Logback や Log4j といったライブラリが env_logger クレートと似たような役割を果たしています。
+
+その他のロギングクレートに関する評価などは、[この記事](https://www.forcia.com/blog/001605.html)に詳しく書かれていあす。
+
+### ロギングの設定
+
+ロギング自体は単純です。環境変数でどのログレベルのログを出力するかを設定し、`info!` や `warn!` 、`error!` といったマクロを使用して各ログレベルのログを出力します。
+
+今回は、info 以上のログレベルのログを出力すると同時に、サーバー起動の初期セットアップが終わったタイミングで、`Bootstrapping the server...` というログを出力してみることにしました。
+
+```rust
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    std::env::set_var("RUST_LOG", "INFO");
+    env_logger::init();
+
+    info!("Bootstrapping the server...");
+
+    HttpServer::new(|| App::new().service(hc).service(todo_list))
+        .bind("127.0.0.1:8080")?
+        .run()
+        .await
+}
+```
+
+最終的にできあがったコードは下記のようになりました。
+
+```rust
+#[macro_use]
+extern crate log;
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use chrono::{DateTime, Utc};
+use serde::Serialize;
+use uuid::Uuid;
+
+#[derive(Serialize)]
+struct Todo {
+    id: Uuid,
+    description: String,
+    done: bool,
+    datetime: DateTime<Utc>,
+}
+
+#[derive(Serialize)]
+struct TodoList(Vec<Todo>);
+
+#[get("/health")]
+async fn hc() -> impl Responder {
+    HttpResponse::Ok().body("OK")
+}
+
+#[get("/todo")]
+async fn todo_list() -> impl Responder {
+    let list = TodoList(vec![
+        Todo {
+            id: Uuid::new_v4(),
+            description: "タスク1".to_string(),
+            done: false,
+            datetime: Utc::now(),
+        },
+        Todo {
+            id: Uuid::new_v4(),
+            description: "タスク2".to_string(),
+            done: false,
+            datetime: Utc::now(),
+        },
+    ]);
+    HttpResponse::Ok().json(list)
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    std::env::set_var("RUST_LOG", "INFO");
+    env_logger::init();
+
+    info!("Bootstrapping the server...");
+
+    HttpServer::new(|| App::new().service(hc).service(todo_list))
+        .bind("127.0.0.1:8080")?
+        .run()
+        .await
+}
+```
