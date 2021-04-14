@@ -189,8 +189,11 @@ use serde::Serialize;
 use uuid::Uuid;
 
 #[derive(Serialize)]
+struct TaskId(Uuid);
+
+#[derive(Serialize)]
 struct Todo {
-    id: Uuid,
+    id: TaskId,
     description: String,
     done: bool,
     datetime: DateTime<Utc>,
@@ -208,13 +211,13 @@ async fn hc() -> impl Responder {
 async fn todo_list() -> impl Responder {
     let list = TodoList(vec![
         Todo {
-            id: Uuid::new_v4(),
+            id: TaskId(Uuid::new_v4()),
             description: "タスク1".to_string(),
             done: false,
             datetime: Utc::now(),
         },
         Todo {
-            id: Uuid::new_v4(),
+            id: TaskId(Uuid::new_v4()),
             description: "タスク2".to_string(),
             done: false,
             datetime: Utc::now(),
