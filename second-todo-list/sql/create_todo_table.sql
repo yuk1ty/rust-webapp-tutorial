@@ -1,0 +1,1 @@
+create table if not exists todo (id integer, description text, done integer, datetime text);
