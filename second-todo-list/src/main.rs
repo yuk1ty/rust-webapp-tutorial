@@ -1,6 +1,7 @@
 use actix_web::web::{Data, Json};
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
+use derive_new::new;
 use log::info;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -18,7 +19,7 @@ struct RegisterTodo {
 #[derive(Serialize)]
 struct TaskId(Uuid);
 
-#[derive(Serialize)]
+#[derive(Serialize, new)]
 struct Todo {
     id: TaskId,
     description: String,
@@ -31,16 +32,15 @@ impl<'stmt> From<&Row<'stmt>> for Todo {
         let uuid: String = row.get_unwrap(0);
         let datetime: String = row.get_unwrap(3);
 
-        Todo {
-            id: TaskId(Uuid::parse_str(uuid.as_str()).unwrap()),
-            description: row.get_unwrap(1),
-            done: matches!(row.get_unwrap(2), 1),
-            datetime: Utc
-                .from_local_datetime(
-                    &NaiveDateTime::parse_from_str(datetime.as_str(), DATETIME_FORMAT).unwrap(),
-                )
-                .unwrap(),
-        }
+        Todo::new(
+            TaskId(Uuid::parse_str(uuid.as_str()).unwrap()),
+            row.get_unwrap(1),
+            matches!(row.get_unwrap(2), 1),
+            Utc.from_local_datetime(
+                &NaiveDateTime::parse_from_str(datetime.as_str(), DATETIME_FORMAT).unwrap(),
+            )
+            .unwrap(),
+        )
     }
 }
 
@@ -77,12 +77,7 @@ async fn register_todo(
 ) -> impl Responder {
     let id = Uuid::new_v4();
 
-    let todo = Todo {
-        id: TaskId(id),
-        description: req.0.description,
-        done: false,
-        datetime: Utc::now(),
-    };
+    let todo = Todo::new(TaskId(id), req.0.description, false, Utc::now());
 
     let conn = db.get().unwrap();
     conn.execute(
