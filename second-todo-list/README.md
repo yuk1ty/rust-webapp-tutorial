@@ -19,7 +19,7 @@ Cargo.toml に下記依存を追加してください。
 ```toml
 r2d2 = "0.8.9"
 r2d2_sqlite = "0.18.0"
-rusqlite = { version = "0.25.0", features = ["chrono", "uuid"] }"
+rusqlite = { version = "0.25.0", features = ["chrono", "uuid"] }
 ```
 
 - `r2d2`: コネクションプールを管理する際に使用するクレートです。
