@@ -1335,12 +1335,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48381bf52627e7b0e02c4c0e4c0c88fc1cf2228a2eb7461d9499b1372399f1da"
 dependencies = [
  "bitflags",
+ "chrono",
  "fallible-iterator",
  "fallible-streaming-iterator",
  "hashlink",
  "libsqlite3-sys",
  "memchr",
  "smallvec",
+ "uuid",
 ]
 
 [[package]]

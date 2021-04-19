@@ -4,7 +4,7 @@ use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use log::info;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::params;
+use rusqlite::{params, Row};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -13,28 +13,6 @@ const DATETIME_FORMAT: &str = "%Y-%m-%dT%H:%M:%S";
 #[derive(Deserialize)]
 struct RegisterTodo {
     description: String,
-}
-
-struct SqliteTodo {
-    id: String,
-    description: String,
-    done: u8,
-    datetime: String,
-}
-
-impl From<SqliteTodo> for Todo {
-    fn from(st: SqliteTodo) -> Self {
-        Todo {
-            id: TaskId(Uuid::parse_str(st.id.as_str()).unwrap()),
-            description: st.description,
-            done: matches!(st.done, 1),
-            datetime: Utc
-                .from_local_datetime(
-                    &NaiveDateTime::parse_from_str(st.datetime.as_str(), DATETIME_FORMAT).unwrap(),
-                )
-                .unwrap(),
-        }
-    }
 }
 
 #[derive(Serialize)]
@@ -46,6 +24,24 @@ struct Todo {
     description: String,
     done: bool,
     datetime: DateTime<Utc>,
+}
+
+impl<'stmt> From<&Row<'stmt>> for Todo {
+    fn from(row: &Row) -> Self {
+        let uuid: String = row.get_unwrap(0);
+        let datetime: String = row.get_unwrap(3);
+
+        Todo {
+            id: TaskId(Uuid::parse_str(uuid.as_str()).unwrap()),
+            description: row.get_unwrap(1),
+            done: matches!(row.get_unwrap(2), 1),
+            datetime: Utc
+                .from_local_datetime(
+                    &NaiveDateTime::parse_from_str(datetime.as_str(), DATETIME_FORMAT).unwrap(),
+                )
+                .unwrap(),
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -65,17 +61,10 @@ async fn todo_list(db: Data<Pool<SqliteConnectionManager>>) -> impl Responder {
         .unwrap();
 
     let results: Vec<Todo> = stmt
-        .query_map([], |row| {
-            Ok(SqliteTodo {
-                id: row.get_unwrap(0),
-                description: row.get_unwrap(1),
-                done: row.get_unwrap(2),
-                datetime: row.get_unwrap(3),
-            })
-        })
+        .query_map([], |row| Ok(Todo::from(row)))
         .unwrap()
         .into_iter()
-        .map(|r| Todo::from(r.unwrap()))
+        .map(|r| r.unwrap())
         .collect();
 
     HttpResponse::Ok().json(TodoList(results))
@@ -88,17 +77,17 @@ async fn register_todo(
 ) -> impl Responder {
     let id = Uuid::new_v4();
 
-    let todo = SqliteTodo {
-        id: id.to_string(),
+    let todo = Todo {
+        id: TaskId(id),
         description: req.0.description,
-        done: 0,
-        datetime: Utc::now().format(DATETIME_FORMAT).to_string(),
+        done: false,
+        datetime: Utc::now(),
     };
 
     let conn = db.get().unwrap();
     conn.execute(
         "insert into todo (id, description, done, datetime) values(?1, ?2, ?3, ?4)",
-        params![todo.id, todo.description, todo.done, todo.datetime],
+        params![todo.id.0, todo.description, todo.done, todo.datetime],
     )
     .unwrap();
 
@@ -107,17 +96,10 @@ async fn register_todo(
         .unwrap();
 
     let results: Vec<Todo> = stmt
-        .query_map(params![id.to_string()], |row| {
-            Ok(SqliteTodo {
-                id: row.get_unwrap(0),
-                description: row.get_unwrap(1),
-                done: row.get_unwrap(2),
-                datetime: row.get_unwrap(3),
-            })
-        })
+        .query_map(params![id.to_string()], |row| Ok(Todo::from(row)))
         .unwrap()
         .into_iter()
-        .map(|r| Todo::from(r.unwrap()))
+        .map(|r| r.unwrap())
         .collect();
 
     HttpResponse::Ok().json(TodoList(results))

@@ -15,4 +15,4 @@ log = "0.4.14"
 env_logger = "0.8.3"
 r2d2 = "0.8.9"
 r2d2_sqlite = "0.18.0"
-rusqlite = "0.25.0"
+rusqlite = { version = "0.25.0", features = ["chrono", "uuid"] }
